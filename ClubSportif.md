@@ -202,7 +202,7 @@ entity FORFAIT_SERVICES {
 CLIENTS "1" -- "1..*" ABONNEMENTS : peut souscrire
 FORFAITS "1" -- "0..*" ABONNEMENTS : peut définir
 
-FORFAITS "1" -- "1..*" FORFAIT_SERVICES : peut inclure
+FORFAITS "1" -- "0..*" FORFAIT_SERVICES : peut inclure
 SERVICES "1" -- "0..*" FORFAIT_SERVICES : peut être dans
 
 ABONNEMENTS "1" -- "1..*" PAIEMENTS : peut générer

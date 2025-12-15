@@ -1,4 +1,6 @@
 
+DROP SCHEMA if exists gym_proactif CASCADE;
+
 create schema gym_proactif;
 
 
@@ -57,6 +59,21 @@ create table employes
     email         varchar(100) unique,          -- Email professionnel unique
     date_embauche date default current_date,    -- Date d'embauche (automatique si non spécifiée)
     salaire       decimal(8,2)                  -- Salaire annuel en dollars
+);
+
+
+-- TABLE FORFAIT_SERVICES
+-- Relation plusieurs-à-plusieurs : un forfait peut inclure plusieurs services
+-- et un service peut être dans plusieurs forfaits
+
+create table forfait_services
+(
+    id_forfait  integer not null,                      -- Forfait concerné (clé étrangère)
+    id_service  integer not null,                      -- Service inclus (clé étrangère)
+    date_ajout  date default current_date,             -- Date d'ajout du service au forfait
+    primary key (id_forfait, id_service),              -- Clé primaire composée
+    foreign key (id_forfait) references forfaits(id),  -- Lien vers le forfait
+    foreign key (id_service) references services(id)   -- Lien vers le service
 );
 
 
@@ -132,19 +149,8 @@ create table paiements
 );
 
 
--- TABLE FORFAIT_SERVICES
--- Relation plusieurs-à-plusieurs : un forfait peut inclure plusieurs services
--- et un service peut être dans plusieurs forfaits
 
-create table forfait_services
-(
-    id_forfait  integer not null,                      -- Forfait concerné (clé étrangère)
-    id_service  integer not null,                      -- Service inclus (clé étrangère)
-    date_ajout  date default current_date,             -- Date d'ajout du service au forfait
-    primary key (id_forfait, id_service),              -- Clé primaire composée
-    foreign key (id_forfait) references forfaits(id),  -- Lien vers le forfait
-    foreign key (id_service) references services(id)   -- Lien vers le service
-);
+
 
 insert into clients (nom, prenom, date_naissance, telephone, email, adresse, type_client)
 values
@@ -180,35 +186,36 @@ values
 
 
 
--- insert into forfait_services (id_forfait, id_service)
--- values
---     -- Forfait Découverte (services de base)
---     (1, 1), (1, 2), (1, 3), (1, 4), (1, 5),
---     -- Forfait Évolution (tous les services)
---     (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7),
---     -- Forfait Jeune Énergie (services de base)
---     (3, 1), (3, 2), (3, 3), (3, 4), (3, 5),
---     -- Forfait Famille (services de base)
---     (4, 1), (4, 2), (4, 3), (4, 4), (4, 5),
---     -- Forfait Corporatif (services de base + cours)
---     (5, 1), (5, 2), (5, 3), (5, 4), (5, 5), (5, 6);
+insert into forfait_services (id_forfait, id_service)
+values
+    -- Forfait Découverte (services de base)
+    (1, 1), (1, 2), (1, 3), (1, 4), (1, 5),
+    -- Forfait Évolution (services de base uniquement )
+    (2, 1), (2, 2), (2, 3), (2, 4), (2, 5),
+    -- Forfait Jeune Énergie (services de base)
+    (3, 1), (3, 2), (3, 3), (3, 4), (3, 5),
+    -- Forfait Famille (services de base)
+    (4, 1), (4, 2), (4, 3), (4, 4), (4, 5),
+    -- Forfait Corporatif (services de base)
+    (5, 1), (5, 2), (5, 3), (5, 4), (5, 5);
+
+
+-- ABONNEMENTS
 
 
 insert into abonnements (id_client, id_forfait, date_debut, date_fin, statut, prix_paye)
 values
-    (1, 3, '2024-09-01', '2025-03-01', 'actif', 30.97),    -- Marie - Forfait Étudiant
+    (1, 3, '2024-09-01', '2025-03-01', 'actif', 30.97),    -- Marie - Forfait Jeune Énergie
     (2, 2, '2024-01-15', '2025-01-15', 'actif', 49.58),    -- Jean - Forfait Évolution
     (3, 1, '2024-06-01', '2025-06-01', 'actif', 40.97),    -- Sophie - Forfait Découverte
     (4, 4, '2024-03-01', '2025-03-01', 'actif', 34.97),    -- Pierre - Forfait Famille
-    (5, 3, '2024-10-01', '2025-04-01', 'actif', 30.97),    -- Amélie - Forfait Étudiant
-    (6, 1, '2023-12-01', '2024-12-01', 'expire', 40.97);   -- Michel - Abonnement expiré
+    (5, 3, '2024-10-01', '2025-04-01', 'actif', 30.97);    -- Amélie - Forfait Jeune Énergie
 
 insert into cours (id_employe, nom_cours, description, duree_minutes, capacite_max)
 values
     (1, 'Musculation débutant', 'Initiation aux techniques de base', 60, 8),
     (2, 'Yoga matinal', 'Séance relaxante pour bien commencer', 75, 15),
     (2, 'Pilates', 'Renforcement du core et souplesse', 60, 12),
-    (5, 'HIIT Cardio', 'Entraînement intensif par intervalles', 45, 10),
     (1, 'Musculation avancé', 'Pour les membres expérimentés', 90, 6);
 
 insert into horaires (id_cours, date_heure, places_disponibles)
@@ -217,7 +224,6 @@ values
     (2, '2024-12-03 07:00:00', 12),  -- Yoga mardi 7h
     (3, '2024-12-03 19:00:00', 8),   -- Pilates mardi 19h
     (4, '2024-12-04 17:30:00', 6),   -- HIIT mercredi 17h30
-    (5, '2024-12-05 20:00:00', 4),   -- Musculation avancé jeudi 20h
     (2, '2024-12-06 07:00:00', 10);  -- Yoga vendredi 7h
 
 insert into participations (id_client, id_horaire, present)
@@ -229,11 +235,12 @@ values
     (4, 4, true),   -- Pierre au HIIT (présent)
     (5, 2, false);  -- Amélie au yoga (absente)
 
--- insert into paiements (id_abonnement, montant, date_paiement, methode_paiement)
--- values
---     (1, 30.97, '2024-09-01', 'carte'),      -- Paiement Marie
---     (2, 49.58, '2024-01-15', 'virement'),   -- Paiement Jean
---     (3, 40.97, '2024-06-01', 'carte'),      -- Paiement Sophie
---     (4, 34.97, '2024-03-01', 'comptant'),   -- Paiement Pierre
---     (5, 30.97, '2024-10-01', 'carte'),      -- Paiement Amélie
---     (6, 40.97, '2023-12-01', 'cheque');     -- Paiement Michel
+insert into paiements (id_abonnement, montant, date_paiement, methode_paiement)
+values
+    (1, 30.97, '2024-09-01', 'carte'),      -- Paiement Marie
+    (2, 49.58, '2024-01-15', 'virement'),   -- Paiement Jean
+    (3, 40.97, '2024-06-01', 'carte'),      -- Paiement Sophie
+    (4, 34.97, '2024-03-01', 'comptant'),   -- Paiement Pierre
+    (5, 30.97, '2024-10-01', 'carte');     -- Paiement Amélie
+
+
