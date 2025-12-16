@@ -171,7 +171,7 @@ ABONNEMENTS "1" -- "1..*" PAIEMENTS : peut générer
 EMPLOYES "1" -- "1..*" COURS : peut animer
 COURS "1" -- "1..*" HORAIRES : peut être programmé
 
-CLIENTS "1" -- "0..*" PARTICIPATIONS : peut participer
+CLIENTS "1" -- "1..*" PARTICIPATIONS : peut participer
 HORAIRES "1" -- "0..*" PARTICIPATIONS : peut accueillir
 
 @enduml
