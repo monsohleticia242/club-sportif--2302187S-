@@ -224,7 +224,7 @@ HORAIRES "1" -- "0..*" PARTICIPATIONS : peut accueillir
 @startuml
 
 entity CLIENTS {
-  * id_client : int <<PK>>
+  * id_client : int <<PK>> -- Identifiant unique du client
   
  
 ---
@@ -240,7 +240,7 @@ entity CLIENTS {
 }
 
 entity FORFAITS {
- * id_forfait : int <<PK>>
+ * id_forfait : int <<PK>> -- Identifiant unique du forfait
 
 ---
 
@@ -251,19 +251,19 @@ entity FORFAITS {
 }
 
 entity SERVICES {
-  * id_service : int <<PK>>
+  * id_service : int <<PK>> -- Identifiant unique du service
   
 ---
   
-  nom_service : varchar(50)
+  nom_service : varchar(50) 
   description : text
   actif : boolean
 }
 
 entity ABONNEMENTS {
-  *id_abonnement : int <<PK>>
-   *id_client : int <<FK>>
-   id_forfait : int <<FK>>
+  *id_abonnement : int <<PK>> -- Identifiant unique de l'abonnement
+   *id_client : int <<FK>> -- Référence vers CLIENTS
+   id_forfait : int <<FK>> -- Référence vers FORFAITS
 ---
 
   date_debut : date
@@ -273,7 +273,7 @@ entity ABONNEMENTS {
 }
 
  entity  EMPLOYES {
-  *id_employe : int <<PK>>
+  *id_employe : int <<PK>> -- Identifiant unique de l'employé
   
 ---
 
@@ -287,8 +287,8 @@ entity ABONNEMENTS {
 }
 
 entity COURS {
- * id_cours : int <<PK>>
-  * id_employe : int <<FK>>
+ * id_cours : int <<PK>> -- Identifiant unique du cours
+  * id_employe : int <<FK>> -- Référence vers EMPLOYES
   
 ---
 
@@ -299,8 +299,8 @@ entity COURS {
 }
 
 entity HORAIRES {
- * id_horaire : int <<PK>>
-  * id_cours : int <<FK>>
+ * id_horaire : int <<PK>> -- Identifiant unique de la session
+  * id_cours : int <<FK>> -- Référence vers COURS
   
 ---
 
@@ -309,9 +309,9 @@ entity HORAIRES {
 }
 
 entity PARTICIPATIONS {
-  * id_participation : int <<PK>>
-  * id_client : int <<FK>>
-  * id_horaire : int <<FK>>
+  * id_participation : int <<PK>> -- Identifiant unique de la participation
+  * id_client : int <<FK>> -- Référence vers CLIENTS
+  * id_horaire : int <<FK>> -- Référence vers HORAIRES
   
 ---
   
@@ -320,8 +320,8 @@ entity PARTICIPATIONS {
 }
 
 entity PAIEMENTS {
-  * id_paiement : int <<PK>>
-   * id_abonnement : int <<FK>>
+  * id_paiement : int <<PK>> -- Identifiant unique du paiement
+   * id_abonnement : int <<FK>> -- Référence vers ABONNEMENTS
    
 ---
    
@@ -331,8 +331,8 @@ entity PAIEMENTS {
 }
 
 entity FORFAIT_SERVICES {
-  * id_forfait : int <<PK,FK>>
-  * id_service : int <<PK,FK>>
+  * id_forfait : int <<PK,FK>> -- Référence vers FORFAITS 
+  * id_service : int <<PK,FK>> -- Référence vers SERVICES
   
 ---
   date_ajout : date
