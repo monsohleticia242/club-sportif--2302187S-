@@ -1,62 +1,80 @@
 set search_path to gym_proactif;
 
+-- 1.  liste des clients étudiants
 
--- Affiche les étudiants avec leurs informations de base
-select nom, prenom, email, type_client
+select nom, prenom, email
 from clients
 where type_client = 'etudiant'
-order by nom, prenom;
+order by nom;
 
--- Montre qui a quel forfait actuellement
-select c.nom, c.prenom, f.nom_forfait, a.prix_paye, a.date_fin
+
+-- 2. jointure  - clients avec leurs forfaits
+
+select c.nom, c.prenom, f.nom_forfait, a.prix_paye
 from clients c
          inner join abonnements a on c.id = a.id_client
          inner join forfaits f on a.id_forfait = f.id
-where a.statut = 'actif'
 order by c.nom;
 
--- Calcule combien chaque forfait rapporte null
-select f.nom_forfait,
-       count(a.id) as nombre_abonnements,
-       sum(a.prix_paye) as revenus_total,
-       avg(a.prix_paye) as prix_moyen
+-- 3. agrégation  - nombre d'abonnements par forfait
+
+select f.nom_forfait, count(a.id) as nombre_abonnements
 from forfaits f
          left join abonnements a on f.id = a.id_forfait
-group by f.id, f.nom_forfait
-order by revenus_total desc;
+group by f.nom_forfait
+order by nombre_abonnements desc;
 
 
 
--- Montre quels services sont les plus demandés
-select s.nom_service,
-       count(fs.id_forfait) as nombre_forfaits_inclus
+-- 4. jointure avec employés - qui donne quels cours
+select e.prenom, e.nom, c.nom_cours, c.duree_minutes
+from employes e
+         inner join cours c on e.id = c.id_employe
+order by e.nom;
+
+-- 5. sous-requête  - forfaits plus chers que 35$
+select nom_forfait, prix_mensuel
+from forfaits
+where prix_mensuel > (select avg(prix_mensuel) from forfaits)
+order by prix_mensuel desc;
+
+
+-- 6. cours les plus populaires
+select c.nom_cours, count(p.id) as nombre_participations
+from cours c
+         left join horaires h on c.id = h.id_cours
+         left join participations p on h.id = p.id_horaire
+group by c.nom_cours
+order by nombre_participations desc;
+
+
+-- 7. agrégation - total des paiements par méthode
+select methode_paiement,
+       count(*) as nombre_paiements,
+       sum(montant) as total_montant
+from paiements
+group by methode_paiement
+order by total_montant desc;
+
+-- 8. jointure left - tous les services et leur utilisation
+select s.nom_service, count(fs.id_forfait) as nombre_forfaits
 from services s
          left join forfait_services fs on s.id = fs.id_service
-group by s.id, s.nom_service
-order by nombre_forfaits_inclus desc, s.nom_service;
+group by s.nom_service
+order by nombre_forfaits desc;
 
+-- 9. requête avec calculs - âge des clients
 
+select nom, prenom, date_naissance,
+       extract(year from age(date_naissance)) as age,
+       type_client
+from clients
+where extract(year from age(date_naissance)) between 18 and 30
+order by age desc;
 
--- Trouve les membres qui ne participent pas aux activités (tout le monde participe a une activité)
-select c.nom, c.prenom, c.email
+-- 10.qui n'a pas encore payé ( tout le monde est a jour )
+select c.nom, c.prenom, a.prix_paye
 from clients c
-where c.id not in (
-    select distinct p.id_client
-    from participations p
-    where p.id_client is not null
-)
-order by c.nom;
-
-
--- Liste simple des participants
-select distinct c.nom, c.prenom, c.email
-from clients c
-         inner join participations p on c.id = p.id_client
-order by c.nom;
-
-
--- Services jamais utilisés dans aucun forfait ( tous les services sont utilisées)
-select s.nom_service, s.description
-from services s
-         left join forfait_services fs on s.id = fs.id_service
-where fs.id_service is null;
+         inner join abonnements a on c.id = a.id_client
+         left join paiements p on a.id = p.id_abonnement
+where p.id is null;
